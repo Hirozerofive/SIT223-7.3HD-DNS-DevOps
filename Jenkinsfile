@@ -81,10 +81,13 @@ pipeline {
             steps {
                 echo '===== MONITORING STAGE ====='
 
-                bat 'timeout /t 3 /nobreak'
+                // Wait 3 seconds for the container to start
+                bat '"%PYTHON%" -c "import time; time.sleep(3)"'
 
+                // Check Docker container status
                 bat '"%DOCKER%" ps --filter "name=%CONTAINER_NAME%"'
 
+                // Run application health check
                 bat '"%PYTHON%" health_check.py'
 
                 echo 'Monitoring health check passed.'
