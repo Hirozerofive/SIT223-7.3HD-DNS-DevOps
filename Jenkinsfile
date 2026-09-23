@@ -3,13 +3,13 @@ pipeline {
 
     environment {
         PYTHON = 'C:\\Users\\hiruk\\AppData\\Local\\Programs\\Python\\Python313\\python.exe'
+        DOCKER = 'C:\\Users\\hiruk\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
         IMAGE_NAME = 'simple-dns'
         CONTAINER_NAME = 'simple-dns-container'
     }
 
     stages {
 
-        // 1. BUILD
         stage('Build') {
             steps {
                 echo '===== BUILD STAGE ====='
@@ -17,14 +17,12 @@ pipeline {
                 bat '"%PYTHON%" --version'
                 bat '"%PYTHON%" -m pip install -r requirements.txt'
 
-                // Build Docker image
-                bat 'docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .'
+                bat '"%DOCKER%" build -t %IMAGE_NAME%:%BUILD_NUMBER% .'
 
                 echo 'Docker image built successfully.'
             }
         }
 
-        // 2. TEST
         stage('Test') {
             steps {
                 echo '===== TEST STAGE ====='
@@ -35,7 +33,6 @@ pipeline {
             }
         }
 
-        // 3. CODE QUALITY
         stage('Code Quality') {
             steps {
                 echo '===== CODE QUALITY STAGE ====='
@@ -46,7 +43,6 @@ pipeline {
             }
         }
 
-        // 4. SECURITY
         stage('Security') {
             steps {
                 echo '===== SECURITY STAGE ====='
@@ -57,46 +53,38 @@ pipeline {
             }
         }
 
-        // 5. DEPLOY
         stage('Deploy') {
             steps {
                 echo '===== DEPLOY STAGE ====='
 
-                // Remove previous container if it exists
-                bat 'docker rm -f %CONTAINER_NAME% 2>nul || exit /b 0'
+                bat '"%DOCKER%" rm -f %CONTAINER_NAME% 2>nul || exit /b 0'
 
-                // Deploy new version
-                bat 'docker run -d --name %CONTAINER_NAME% -p 5000:5000/udp %IMAGE_NAME%:%BUILD_NUMBER%'
+                bat '"%DOCKER%" run -d --name %CONTAINER_NAME% -p 5000:5000/udp %IMAGE_NAME%:%BUILD_NUMBER%'
 
                 echo 'Application deployed successfully.'
             }
         }
 
-        // 6. RELEASE
         stage('Release') {
             steps {
                 echo '===== RELEASE STAGE ====='
 
-                // Create versioned release tag
-                bat 'docker tag %IMAGE_NAME%:%BUILD_NUMBER% %IMAGE_NAME%:release-%BUILD_NUMBER%'
+                bat '"%DOCKER%" tag %IMAGE_NAME%:%BUILD_NUMBER% %IMAGE_NAME%:release-%BUILD_NUMBER%'
 
-                echo 'Release image created.'
-                bat 'docker images %IMAGE_NAME%'
+                bat '"%DOCKER%" images %IMAGE_NAME%'
+
+                echo 'Versioned release created successfully.'
             }
         }
 
-        // 7. MONITORING
         stage('Monitoring') {
             steps {
                 echo '===== MONITORING STAGE ====='
 
-                // Give container a few seconds to start
                 bat 'timeout /t 3 /nobreak'
 
-                // Check that container is running
-                bat 'docker ps --filter "name=%CONTAINER_NAME%"'
+                bat '"%DOCKER%" ps --filter "name=%CONTAINER_NAME%"'
 
-                // Application health check
                 bat '"%PYTHON%" health_check.py'
 
                 echo 'Monitoring health check passed.'
@@ -105,11 +93,10 @@ pipeline {
     }
 
     post {
-
         success {
             echo '======================================'
             echo 'DEVOPS PIPELINE COMPLETED SUCCESSFULLY!'
-            echo 'Build, Test, Quality, Security, Deploy, Release and Monitoring passed.'
+            echo 'All 7 stages passed.'
             echo '======================================'
         }
 
