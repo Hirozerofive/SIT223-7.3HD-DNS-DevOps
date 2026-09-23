@@ -2,7 +2,7 @@ import socket
 import json
 
 # Server settings
-SERVER_IP = "0.0.0.0"
+SERVER_IP = "0.0.0.0"  # nosec B104 - required for Docker container networking
 SERVER_PORT = 5000
 
 # DNS records
