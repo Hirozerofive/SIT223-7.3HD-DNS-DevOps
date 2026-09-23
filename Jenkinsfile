@@ -96,22 +96,71 @@ pipeline {
     }
 
     post {
-        success {
-            echo '======================================'
-            echo 'DEVOPS PIPELINE COMPLETED SUCCESSFULLY!'
-            echo 'All 7 stages passed.'
-            echo '======================================'
-        }
+    success {
+        echo '======================================'
+        echo 'DEVOPS PIPELINE COMPLETED SUCCESSFULLY!'
+        echo 'All 7 stages passed.'
+        echo '======================================'
 
-        failure {
-            echo '======================================'
-            echo 'PIPELINE FAILED!'
-            echo 'Check the failed stage in Jenkins.'
-            echo '======================================'
-        }
+        emailext(
+            to: 'hirukajude05web@gmail.com',
+            subject: "SUCCESS: DNS DevOps Pipeline - Build #${BUILD_NUMBER}",
+            body: """Hello,
 
-        always {
-            echo "Pipeline finished for Jenkins Build #${BUILD_NUMBER}"
-        }
+The DNS DevOps pipeline completed successfully.
+
+Project: ${JOB_NAME}
+Build Number: ${BUILD_NUMBER}
+Status: SUCCESS
+
+All stages completed:
+- Build
+- Test
+- Code Quality
+- Security
+- Deploy
+- Release
+- Monitoring
+
+Jenkins Build:
+${BUILD_URL}
+
+Regards,
+Jenkins DevOps Pipeline
+"""
+        )
     }
+
+    failure {
+        echo '======================================'
+        echo 'PIPELINE FAILED!'
+        echo 'Check the failed stage in Jenkins.'
+        echo '======================================'
+
+        emailext(
+            to: 'hirukajude05web@gmail.com',
+            subject: "FAILED: DNS DevOps Pipeline - Build #${BUILD_NUMBER}",
+            body: """Hello,
+
+The DNS DevOps pipeline failed.
+
+Project: ${JOB_NAME}
+Build Number: ${BUILD_NUMBER}
+Status: FAILED
+
+Please check the Jenkins console output for the failed stage.
+
+Jenkins Build:
+${BUILD_URL}
+
+Regards,
+Jenkins DevOps Pipeline
+"""
+        )
+    }
+
+    always {
+        echo "Pipeline finished for Jenkins Build #${BUILD_NUMBER}"
+    }
+}
 }
