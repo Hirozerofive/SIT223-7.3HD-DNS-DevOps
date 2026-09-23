@@ -6,7 +6,7 @@ def test_a_record():
 
     assert response["status"] == "success"
     assert response["record_type"] == "A"
-    assert response["ip_address"] == "192.168.1.10"
+    assert response["ip_address"] == "1.1.1.1"
 
 
 def test_cname_record():
